@@ -1,0 +1,44 @@
+############ MID Config #############
+# optimizer
+lr: 0.001
+# dataset
+data_dir: processed_data
+  # the path with the directory with XXX.pkl
+# Training Prarmeters:
+diffnet: TransformerConcatLinear #TransformerConcatLinear
+encoder_dim: 256
+tf_layer: 3
+epochs: 90
+batch_size: 256
+eval_batch_size: 256
+k_eval: 25
+seed: 123
+eval_every: 30
+# Testing
+eval_at: 70
+eval_mode: False
+############### Trajectron++ Config #################
+# misc
+conf: None
+debug: False
+preprocess_workers: 0
+# model parameters
+offline_scene_graph: yes
+dynamic_edges: yes
+edge_state_combine_method: sum
+edge_influence_combine_method: attention
+edge_addition_filter: [0.25, 0.5, 0.75, 1.0]
+edge_removal_filter: [1.0, 0.0]
+override_attention_radius: []
+incl_robot_node: False
+map_encoding: False
+augment: True
+node_freq_mult_train: False
+node_freq_mult_eval: False
+scene_freq_mult_train: False
+scene_freq_mult_eval: False
+scene_freq_mult_viz: False
+no_edge_encoding: False
+# Data Parameters:
+device: cuda
+eval_device: None
