@@ -5,8 +5,11 @@ By Tianpei Gu*, Guangyi Chen*, Junlong Li, Chunze Lin, Yongming Rao, Jie Zhou an
 
 [[Paper]](https://arxiv.org/abs/2203.13777) |  [[Video Presentation]](https://www.youtube.com/watch?v=g1vf9wio6VM)
 
+✨ Do not hesitate to give a star! ✨
+
 [MID GIF]
 
+> Human behavior has the nature of indeterminacy, which requires the pedestrian trajectory prediction system to model the multi-modality of future motion states. Unlike existing stochastic trajectory prediction methods which usually use a latent variable to represent multi-modality, we explicitly simulate the process of human motion variation from indeterminate to determinate. In this paper, we present a new framework to formulate the trajectory prediction task as a reverse process of **motion indeterminacy diffusion (MID)**, in which we progressively discard indeterminacy from all the walkable areas until reaching the desired trajectory. This process is learned with a parameterized Markov chain conditioned by the observed trajectories. We can adjust the length of the chain to control the degree of indeterminacy and balance the diversity and determinacy of the predictions. Specifically, we encode the history behavior information and the social interactions as a state embedding and devise a Transformer-based diffusion model to capture the temporal dependencies of trajectories.
 
 # Code
 
@@ -16,7 +19,7 @@ By Tianpei Gu*, Guangyi Chen*, Junlong Li, Chunze Lin, Yongming Rao, Jie Zhou an
 
 ## Prepare Data
 
-We pre-process the data of both ETH/UCY dataset and Stanford Drone dataset for training.
+The preprocessed data splits for the ETH/UCY and Stanford Dronw datasets are in ```raw_data```. We preprocess the data and generate .pkl files for training.
 
 To do so run
 
@@ -24,7 +27,7 @@ To do so run
 python process_data.py
 ```
 
-Please see ```process_data.py``` for detail.
+The `train/validation/test/` splits are the same as those found in [Social GAN]( https://github.com/agrimgupta92/sgan). Please see ```process_data.py``` for detail.
 
 ## Training
 
@@ -44,16 +47,21 @@ Logs and checkpoints will be automatically saved.
 
 ## Evaluation
 
-To evaluate a trained-model, please set ```eval_mode``` in config file to True and set the epoch you'd like to evaluate at from ```eval_at```
+To evaluate a trained-model, please set ```eval_mode``` in config file to True and set the epoch you'd like to evaluate at from ```eval_at``` and run
+
+ ```python main.py --config configs/YOUR_CONFIG.yaml --dataset DATASET``` 
 
 Since diffusion model is an iterative process, the evaluation process may take a long time. We are working on a faster version of MID or you can set a shorter diffusion steps (default 100 steps).
 
 ## Result
 
+### ETH/UCY
+
+### Stanford Dronw
 
 
 ### Citation
-
+```
     @inproceedings{gu2022stochastic,
       title={Stochastic Trajectory Prediction via Motion Indeterminacy Diffusion},
       author={Gu, Tianpei and Chen, Guangyi and Li, Junlong and Lin, Chunze and Rao, Yongming and Zhou, Jie and Lu, Jiwen},
@@ -61,7 +69,7 @@ Since diffusion model is an iterative process, the evaluation process may take a
       pages={17113--17122},
       year={2022}
     }
-
+```
 ### License
 
 Our code is released under MIT License.
