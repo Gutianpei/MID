@@ -5,8 +5,6 @@ By Tianpei Gu*, Guangyi Chen*, Junlong Li, Chunze Lin, Yongming Rao, Jie Zhou an
 
 [[Paper]](https://arxiv.org/abs/2203.13777) |  [[Video Presentation]](https://www.youtube.com/watch?v=g1vf9wio6VM)
 
-✨ Do not hesitate to give a star! ✨
-
 <p align="center">
   <img src="https://user-images.githubusercontent.com/21379120/204936740-65891c87-c4c1-467f-a883-8311af89ba09.gif" alt="animated" />
 </p>
