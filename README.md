@@ -7,8 +7,9 @@ By Tianpei Gu*, Guangyi Chen*, Junlong Li, Chunze Lin, Yongming Rao, Jie Zhou an
 
 ✨ Do not hesitate to give a star! ✨
 
-
-![mid_gif](https://user-images.githubusercontent.com/21379120/204936740-65891c87-c4c1-467f-a883-8311af89ba09.gif)
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/21379120/204936740-65891c87-c4c1-467f-a883-8311af89ba09.gif" alt="animated" />
+</p>
 
 > Human behavior has the nature of indeterminacy, which requires the pedestrian trajectory prediction system to model the multi-modality of future motion states. Unlike existing stochastic trajectory prediction methods which usually use a latent variable to represent multi-modality, we explicitly simulate the process of human motion variation from indeterminate to determinate. In this paper, we present a new framework to formulate the trajectory prediction task as a reverse process of **motion indeterminacy diffusion (MID)**, in which we progressively discard indeterminacy from all the walkable areas until reaching the desired trajectory. This process is learned with a parameterized Markov chain conditioned by the observed trajectories. We can adjust the length of the chain to control the degree of indeterminacy and balance the diversity and determinacy of the predictions. Specifically, we encode the history behavior information and the social interactions as a state embedding and devise a Transformer-based diffusion model to capture the temporal dependencies of trajectories.
 
