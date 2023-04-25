@@ -57,6 +57,75 @@ class VarianceSchedule(Module):
         sigmas = self.sigmas_flex[t] * flexibility + self.sigmas_inflex[t] * (1 - flexibility)
         return sigmas
 
+class DiffusionTraj(Module):
+
+    def __init__(self, net, var_sched:VarianceSchedule):
+        super().__init__()
+        self.net = net
+        self.var_sched = var_sched
+
+    def get_loss(self, x_0, context, t=None):
+
+        batch_size, _, point_dim = x_0.size()
+        if t == None:
+            t = self.var_sched.uniform_sample_t(batch_size)
+
+        alpha_bar = self.var_sched.alpha_bars[t]
+        beta = self.var_sched.betas[t].cuda()
+
+        c0 = torch.sqrt(alpha_bar).view(-1, 1, 1).cuda()       # (B, 1, 1)
+        c1 = torch.sqrt(1 - alpha_bar).view(-1, 1, 1).cuda()   # (B, 1, 1)
+
+        e_rand = torch.randn_like(x_0).cuda()  # (B, N, d)
+
+
+        e_theta = self.net(c0 * x_0 + c1 * e_rand, beta=beta, context=context)
+        loss = F.mse_loss(e_theta.view(-1, point_dim), e_rand.view(-1, point_dim), reduction='mean')
+        return loss
+
+    def sample(self, num_points, context, sample, bestof, point_dim=2, flexibility=0.0, ret_traj=False, sampling="ddpm", step=100):
+        traj_list = []
+        for i in range(sample):
+            batch_size = context.size(0)
+            if bestof:
+                x_T = torch.randn([batch_size, num_points, point_dim]).to(context.device)
+            else:
+                x_T = torch.zeros([batch_size, num_points, point_dim]).to(context.device)
+            traj = {self.var_sched.num_steps: x_T}
+            stride = step
+            #stride = int(100/stride)
+            for t in range(self.var_sched.num_steps, 0, -stride):
+                z = torch.randn_like(x_T) if t > 1 else torch.zeros_like(x_T)
+                alpha = self.var_sched.alphas[t]
+                alpha_bar = self.var_sched.alpha_bars[t]
+                alpha_bar_next = self.var_sched.alpha_bars[t-stride]
+                #pdb.set_trace()
+                sigma = self.var_sched.get_sigmas(t, flexibility)
+
+                c0 = 1.0 / torch.sqrt(alpha)
+                c1 = (1 - alpha) / torch.sqrt(1 - alpha_bar)
+
+                x_t = traj[t]
+                beta = self.var_sched.betas[[t]*batch_size]
+                e_theta = self.net(x_t, beta=beta, context=context)
+                if sampling == "ddpm":
+                    x_next = c0 * (x_t - c1 * e_theta) + sigma * z
+                elif sampling == "ddim":
+                    x0_t = (x_t - e_theta * (1 - alpha_bar).sqrt()) / alpha_bar.sqrt()
+                    x_next = alpha_bar_next.sqrt() * x0_t + (1 - alpha_bar_next).sqrt() * e_theta
+                else:
+                    pdb.set_trace()
+                traj[t-stride] = x_next.detach()     # Stop gradient and save trajectory.
+                traj[t] = traj[t].cpu()         # Move previous output to CPU memory.
+                if not ret_traj:
+                   del traj[t]
+
+            if ret_traj:
+                traj_list.append(traj)
+            else:
+                traj_list.append(traj[0])
+        return torch.stack(traj_list)
+
 class TrajNet(Module):
 
     def __init__(self, point_dim, context_dim, residual):
@@ -194,64 +263,3 @@ class LinearDecoder(Module):
             if i < len(self.layers) - 1:
                 out = self.act(out)
         return out
-
-
-
-class DiffusionTraj(Module):
-
-    def __init__(self, net, var_sched:VarianceSchedule):
-        super().__init__()
-        self.net = net
-        self.var_sched = var_sched
-
-    def get_loss(self, x_0, context, t=None):
-
-        batch_size, _, point_dim = x_0.size()
-        if t == None:
-            t = self.var_sched.uniform_sample_t(batch_size)
-
-        alpha_bar = self.var_sched.alpha_bars[t]
-        beta = self.var_sched.betas[t].cuda()
-
-        c0 = torch.sqrt(alpha_bar).view(-1, 1, 1).cuda()       # (B, 1, 1)
-        c1 = torch.sqrt(1 - alpha_bar).view(-1, 1, 1).cuda()   # (B, 1, 1)
-
-        e_rand = torch.randn_like(x_0).cuda()  # (B, N, d)
-
-
-        e_theta = self.net(c0 * x_0 + c1 * e_rand, beta=beta, context=context)
-        loss = F.mse_loss(e_theta.view(-1, point_dim), e_rand.view(-1, point_dim), reduction='mean')
-        return loss
-
-    def sample(self, num_points, context, sample, bestof, point_dim=2, flexibility=0.0, ret_traj=False):
-        traj_list = []
-        for i in range(sample):
-            batch_size = context.size(0)
-            if bestof:
-                x_T = torch.randn([batch_size, num_points, point_dim]).to(context.device)
-            else:
-                x_T = torch.zeros([batch_size, num_points, point_dim]).to(context.device)
-            traj = {self.var_sched.num_steps: x_T}
-            for t in range(self.var_sched.num_steps, 0, -1):
-                z = torch.randn_like(x_T) if t > 1 else torch.zeros_like(x_T)
-                alpha = self.var_sched.alphas[t]
-                alpha_bar = self.var_sched.alpha_bars[t]
-                sigma = self.var_sched.get_sigmas(t, flexibility)
-
-                c0 = 1.0 / torch.sqrt(alpha)
-                c1 = (1 - alpha) / torch.sqrt(1 - alpha_bar)
-
-                x_t = traj[t]
-                beta = self.var_sched.betas[[t]*batch_size]
-                e_theta = self.net(x_t, beta=beta, context=context)
-                x_next = c0 * (x_t - c1 * e_theta) + sigma * z
-                traj[t-1] = x_next.detach()     # Stop gradient and save trajectory.
-                traj[t] = traj[t].cpu()         # Move previous output to CPU memory.
-                if not ret_traj:
-                   del traj[t]
-
-            if ret_traj:
-                traj_list.append(traj)
-            else:
-                traj_list.append(traj[0])
-        return torch.stack(traj_list)
