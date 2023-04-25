@@ -5,6 +5,7 @@ import yaml
 # from pprint import pprint
 from easydict import EasyDict
 import numpy as np
+import pdb
 
 
 
@@ -25,8 +26,8 @@ def main():
     for k, v in vars(args).items():
        config[k] = v
     config["exp_name"] = args.config.split("/")[-1].split(".")[0]
-    config["dataset"] = args.dataset
-
+    config["dataset"] = args.dataset[:-1]
+    #pdb.set_trace()
     config = EasyDict(config)
     agent = MID(config)
 
@@ -37,8 +38,12 @@ def main():
     #         keys[k] = v
     #
     # pprint(keys)
+
+    sampling = "ddim"
+    steps = 5
+
     if config["eval_mode"]:
-        agent.eval()
+        agent.eval(sampling, 100//step)
     else:
         agent.train()
 
