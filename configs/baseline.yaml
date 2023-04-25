@@ -17,6 +17,8 @@ eval_every: 30
 # Testing
 eval_at: 70
 eval_mode: False
+# set to "ddim" to enable fast sampling
+sampling: ddpm
 ############### Trajectron++ Config #################
 # misc
 conf: None
