@@ -14,7 +14,7 @@ By Tianpei Gu*, Guangyi Chen*, Junlong Li, Chunze Lin, Yongming Rao, Jie Zhou an
 ## Update
 04/2023 
 
-We integrate DDIM into MID framework which only uses TWO steps to achieve similar performance, save 50x speed compares to original 100 steps generation.
+We integrate DDIM into MID framework which only uses **TWO steps** to achieve similar performance, save **50x** speed compares to original 100 steps generation.
 
 The update is a one-line changes in ```models/diffusion.py```. To enable fast sampling, you can change sampling to **ddim** set the step in ```main.py```. Note that the step needs to be factors of your trained diffusion steps (100 in our settings).
 
