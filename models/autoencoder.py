@@ -28,12 +28,12 @@ class AutoEncoder(Module):
     def encode(self, batch,node_type):
         z = self.encoder.get_latent(batch, node_type)
         return z
-
-    def generate(self, batch, node_type, num_points, sample, bestof,flexibility=0.0, ret_traj=False):
-
+    
+    def generate(self, batch, node_type, num_points, sample, bestof,flexibility=0.0, ret_traj=False, sampling="ddpm", step=100):
+        #print(f"Using {sampling}")
         dynamics = self.encoder.node_models_dict[node_type].dynamic
         encoded_x = self.encoder.get_latent(batch, node_type)
-        predicted_y_vel =  self.diffusion.sample(num_points, encoded_x,sample,bestof, flexibility=flexibility, ret_traj=ret_traj)
+        predicted_y_vel =  self.diffusion.sample(num_points, encoded_x,sample,bestof, flexibility=flexibility, ret_traj=ret_traj, sampling=sampling, step=step)
         predicted_y_pos = dynamics.integrate_samples(predicted_y_vel)
         return predicted_y_pos.cpu().detach().numpy()
 
