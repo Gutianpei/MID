@@ -112,10 +112,10 @@ class MID():
                 self.model.train()
 
 
-    def eval(self):
+    def eval(self, sampling, step):
         epoch = self.config.eval_at
 
-
+        self.log.info(f"Sampling: {sampling} Stride: {step}")
 
         node_type = "PEDESTRIAN"
         eval_ade_batch_errors = []
@@ -137,7 +137,7 @@ class MID():
                 test_batch = batch[0]
                 nodes = batch[1]
                 timesteps_o = batch[2]
-                traj_pred = self.model.generate(test_batch, node_type, num_points=12, sample=20,bestof=True) # B * 20 * 12 * 2
+                traj_pred = self.model.generate(test_batch, node_type, num_points=12, sample=20,bestof=True, sampling=sampling, step=step) # B * 20 * 12 * 2
 
                 predictions = traj_pred
                 predictions_dict = {}
@@ -172,7 +172,7 @@ class MID():
         elif self.config.dataset == "sdd":
             ade = ade * 50
             fde = fde * 50
-
+        print(f"Sampling: {sampling} Stride: {step}")
         print(f"Epoch {epoch} Best Of 20: ADE: {ade} FDE: {fde}")
         #self.log.info(f"Best of 20: Epoch {epoch} ADE: {ade} FDE: {fde}")
 
